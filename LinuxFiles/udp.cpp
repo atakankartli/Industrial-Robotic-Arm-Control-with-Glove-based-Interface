@@ -10,8 +10,8 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-
 #define DEST_IP_ADDR "192.168.0.20"
+//#define DEST_IP_ADDR "169.254.237.55"
 #define MAXBUFLEN 512 // Max length of sendText
 #define PORT 10000  // The port on which to send data
 #define PIPEFILE "node2c.fifo"
@@ -56,14 +56,14 @@ typedef struct
 
 typedef struct
 {
-	long p1; // Motor 1 axis
-	long p2; // Motor 2 axis
-	long p3; // Motor 3 axis
-	long p4; // Motor 4 axis
-	long p5; // Motor 5 axis
-	long p6; // Motor 6 axis
-	long p7; // Additional axis 1 (Motor 7 axis)
-	long p8; // Additional axis 2 (Motor 8 axis)
+	float p1; // Motor 1 axis
+	float p2; // Motor 2 axis
+	float p3; // Motor 3 axis
+	float p4; // Motor 4 axis
+	float p5; // Motor 5 axis
+	float p6; // Motor 6 axis
+	float p7; // Additional axis 1 (Motor 7 axis)
+	float p8; // Additional axis 2 (Motor 8 axis)
 } PULSE;
 
 
@@ -96,7 +96,7 @@ typedef struct enet_rtcmd_str
 		POSE pos;	  // XYZ type [mm/rad]
 		JOINT jnt;	  // Joint type [rad]
 		PULSE pls;	  // Pulse type [pls]
-		long lng1[8]; // Integer type [% / non-unit]
+		float lng1[8]; // Integer type [% / non-unit]
 	} dat;
 	unsigned short SendIOType; // Send input/output signal data designation
 	unsigned short RecvIOType; // Return input/output signal data designation
@@ -107,14 +107,14 @@ typedef struct enet_rtcmd_str
 	unsigned short BitMask;	   // Transmission bit mask pattern designation (0x0001-0xffff)
 	unsigned short IoData;	   // Input/output signal data (0x0000-0xffff)
 	unsigned short TCount;	   // Timeout time counter value
-	unsigned long CCount;	   // Transmission data counter value
+	float CCount;	   // Transmission data counter value
 	unsigned short RecvType1;  // Reply data-type specification 1
 	union rtdata1
 	{				  // Monitor data 1
 		POSE pos1;	  // XYZ type [mm/rad]
 		JOINT jnt1;	  // JOINT type [mm/rad]
 		PULSE pls1;	  // PULSE type [mm/rad]
-		long lng1[8]; // Integer type [% / non-unit]
+		float lng1[8]; // Integer type [% / non-unit]
 	} dat1;
 	unsigned short RecvType2; // Reply data-type specification 2
 	union rtdata2
@@ -122,7 +122,7 @@ typedef struct enet_rtcmd_str
 		POSE pos2;	  // XYZ type [mm/rad]
 		JOINT jnt2;	  // JOINT type [mm/rad]
 		PULSE pls2;	  // PULSE type [mm/rad] or Integer type [% / non-unit]
-		long lng2[8]; // Integer type [% / non-unit]
+		float lng2[8]; // Integer type [% / non-unit]
 	} dat2;
 	unsigned short RecvType3; // Reply data-type specification 3
 
@@ -131,7 +131,7 @@ typedef struct enet_rtcmd_str
 		POSE pos3;	  // XYZ type [mm/rad]
 		JOINT jnt3;	  // JOINT type [mm/rad]
 		PULSE pls3;	  // PULSE type [mm/rad] or Integer type [% / non-unit]
-		long lng3[8]; // Integer type [% / non-unit]
+		float lng3[8]; // Integer type [% / non-unit]
 	} dat3;
 } MXTCMD;
 
@@ -155,14 +155,15 @@ int main(void)
 	unsigned short IOBitMask = 0xffff;
 	unsigned short IOBitData = 0;
 
-    
+
 	type = 2;
 	type_mon[0] = 1;
 	type_mon[1] = 1;
 	type_mon[2] = 1;
 	type_mon[3] = 1;
 
-    printf("IP=%s / PORT=%d / Send Type=%d / Monitor Type0/1/2/3=%d/%d/%d/%d", DEST_IP_ADDR, PORT, type, type_mon[0], type_mon[1], type_mon[2], type_mon[3]);
+    printf("IP=%s / PORT=%d / Send Type=%d / Monitor Type0/1/2/3=%d/%d/%d/%d\n", DEST_IP_ADDR, PORT, type, type_mon[0], type_mon[1], type_mon[2], type_mon[3]);
+
 
     if ((destSocket = socket(AF_INET, SOCK_DGRAM, 0)) == -1)
     {
@@ -186,13 +187,13 @@ int main(void)
 	JOINT jnt_now;
 	POSE pos_now;
 	PULSE pls_now;
-	unsigned long counter = 0;
+	float counter = 0;
 	int loop = 1;
 	int disp = 0;
 	int disp_data = 0;
 	int ch;
 	float delta = (float)0.0;
-	long ratio = 1;
+	float ratio = 1;
 	int retry;
 
 	memset(&MXTsend, 0, sizeof(MXTsend));
@@ -203,7 +204,7 @@ int main(void)
     while(loop)
     {
         memset(&MXTsend, 0, sizeof(MXTsend));
-		memset(&MXTrecv, 0, sizeof(MXTrecv));
+	memset(&MXTrecv, 0, sizeof(MXTrecv));
         if (loop == 1)
 		{ // Only first time
 			MXTsend.Command = MXT_CMD_NULL;
@@ -212,6 +213,7 @@ int main(void)
 			MXTsend.SendIOType = MXT_IO_NULL;
 			MXTsend.RecvIOType = IOSendType;
 			MXTsend.CCount = counter = 0;
+			loop = 2;
 		}
 		else
 		{ // Second and following times
@@ -234,7 +236,7 @@ int main(void)
 				break;
 			case MXT_TYP_PULSE:
 				memcpy(&MXTsend.dat.pls, &pls_now, sizeof(PULSE));
-				MXTsend.dat.pls.p1 += (long)((delta * ratio) * 10);
+				MXTsend.dat.pls.p1 += (float)((delta * ratio) * 10);
 				break;
 			default:
 				break;
@@ -248,7 +250,8 @@ int main(void)
 			MXTsend.CCount = counter;
 		}
       
-			ch = getData();/////BLOCKING
+			//ch = getData();/////BLOCKING
+			ch = 'P';
 
 			switch (ch)
 			{
@@ -257,7 +260,7 @@ int main(void)
 				loop = 0;
 				break;
 			case 'P':
-				delta += (float)0.3;
+				delta += (float)0.05;
 				break;
 			case 'N':
 				delta -= (float)0.3;
@@ -277,33 +280,40 @@ int main(void)
 			}
 
 
-        memset(sendText, 0, MAXBUFLEN);
+		memset(sendText, 0, MAXBUFLEN);
 		memcpy(sendText, &MXTsend, sizeof(MXTsend));
+		
+		printf("Data Length: %d\n", sizeof(MXTsend));
+		printf("Data Length (.dat): %d\n", sizeof(MXTsend.dat));
+		printf("Data Length (.dat.pos): %d\n", sizeof(MXTsend.dat.pos));
+		printf("Data Length (.dat.jnt): %d\n", sizeof(MXTsend.dat.jnt));
+		printf("Data Length (.dat.pls): %d\n", sizeof(MXTsend.dat.pls));
+		printf("Data Length(float): %d\n", sizeof(float));
+		printf("Data: ");
+		fflush(stdout);
+		
+		int i;
+		for(i = 0; i < sizeof(MXTsend); i++)
+		{
+			printf("%X ", sendText[i]);
+		}
+		
+		printf("\n");
+		
+		printf("sendto Length: %d\n", strlen(sendText));
+		
+		
+		// send the sendText
+	    if (sendto(destSocket, sendText, sizeof(MXTsend), 0, (struct sockaddr *)&destSockAddr, socketLen) == -1)
+	    {
+		die("sendto()");
+	    }
+		sleep(1);
 
     }
 
 
-    // send the sendText
-    if (sendto(destSocket, sendText, strlen(sendText), 0, (struct sockaddr *)&destSockAddr, socketLen) == -1)
-    {
-        die("sendto()");
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    
 
 
     // receive a reply and print it
