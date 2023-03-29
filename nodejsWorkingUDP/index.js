@@ -83,14 +83,14 @@ let robotControlSend = Struct()
   .word16Ule('reservestart')        // Command data type designation
   .word16Ule('RecvType1')       // Reply data-type specification 3
   .word16Ule('reserve1')
-  .word32Ule('pos1')
-  .word32Ule('pos2')
-  .word32Ule('pos3')
-  .word32Ule('pos4')
-  .word32Ule('pos5')
-  .word32Ule('pos6')
-  .word32Ule('pos7')
-  .word32Ule('pos8')
+  .floatle('pos1')
+  .floatle('pos2')
+  .floatle('pos3')
+  .floatle('pos4')
+  .floatle('pos5')
+  .floatle('pos6')
+  .floatle('pos7')
+  .floatle('pos8')
   .word64Ule('respos1')
   .word16Ule('SendIOType')      // Send input/output signal data designation
   .word16Ule('RecvIOType')      // Return input/output signal data designation
@@ -99,14 +99,14 @@ let robotControlSend = Struct()
   .word32Ule('CCount')          // Transmission data counter value
   .word16Ule('RecvType2')       // Reply data-type specification 1
   .word16Ule('reserve2')
-  .word32Ule('pos1recv1')
-  .word32Ule('pos2recv1')
-  .word32Ule('pos3recv1')       // XYZ type [mm/rad] 
-  .word32Ule('pos4recv1')       // Joint type [rad]
-  .word32Ule('pos5recv1')
-  .word32Ule('pos6recv1')
-  .word32Ule('pos7recv1')
-  .word32Ule('pos8recv1')
+  .floatle('pos1recv1')
+  .floatle('pos2recv1')
+  .floatle('pos3recv1')       // XYZ type [mm/rad] 
+  .floatle('pos4recv1')       // Joint type [rad]
+  .floatle('pos5recv1')
+  .floatle('pos6recv1')
+  .floatle('pos7recv1')
+  .floatle('pos8recv1')
   .word64Ule('respos2')
   .word16Ule('RecvType3')       // Reply data-type specification 2
   .word16Ule('reserve3')
@@ -141,14 +141,14 @@ let robotControlRecv = Struct()
   .word16Ule('reservestart')        // Command data type designation
   .word16Ule('RecvType1')       // Reply data-type specification 3
   .word16Ule('reserve1')
-  .word32Ule('pos1')
-  .word32Ule('pos2')
-  .word32Ule('pos3')
-  .word32Ule('pos4')
-  .word32Ule('pos5')
-  .word32Ule('pos6')
-  .word32Ule('pos7')
-  .word32Ule('pos8')
+  .floatle('pos1')
+  .floatle('pos2')
+  .floatle('pos3')
+  .floatle('pos4')
+  .floatle('pos5')
+  .floatle('pos6')
+  .floatle('pos7')
+  .floatle('pos8')
   .word64Ule('respos1')
   .word16Ule('SendIOType')      // Send input/output signal data designation
   .word16Ule('RecvIOType')      // Return input/output signal data designation
@@ -157,14 +157,14 @@ let robotControlRecv = Struct()
   .word32Ule('CCount')          // Transmission data counter value
   .word16Ule('RecvType2')       // Reply data-type specification 1
   .word16Ule('reserve2')
-  .word32Ule('pos1recv1')
-  .word32Ule('pos2recv1')
-  .word32Ule('pos3recv1')       // XYZ type [mm/rad] 
-  .word32Ule('pos4recv1')       // Joint type [rad]
-  .word32Ule('pos5recv1')
-  .word32Ule('pos6recv1')
-  .word32Ule('pos7recv1')
-  .word32Ule('pos8recv1')
+  .floatle('pos1recv1')
+  .floatle('pos2recv1')
+  .floatle('pos3recv1')       // XYZ type [mm/rad] 
+  .floatle('pos4recv1')       // Joint type [rad]
+  .floatle('pos5recv1')
+  .floatle('pos6recv1')
+  .floatle('pos7recv1')
+  .floatle('pos8recv1')
   .word64Ule('respos2')
   .word16Ule('RecvType3')       // Reply data-type specification 2
   .word16Ule('reserve3')
@@ -199,27 +199,41 @@ robotControlRecv.allocate();
 let robotControlRecvBuffer = robotControlSend.buffer();
 let robotControlRecvFields = robotControlSend.fields;
 
-robotControlSendFields.Command = 0x0001;
-robotControlSendFields.reservestart = 0x0002;
-robotControlSendFields.reserve1 = 0x0002;
-robotControlSendFields.RecvType1 = 0x0002;
-robotControlSendFields.reserve2 = 0x0002;
-robotControlSendFields.RecvType2 = 0x0002;
-robotControlSendFields.reserve3 = 0x0002;
-robotControlSendFields.RecvType3 = 0x0002;
-robotControlSendFields.reserve4 = 0x0002;
-robotControlSendFields.RecvType4 = 0x0002;
+robotControlSendFields.Command = 0x0000;
+robotControlSendFields.reservestart = 0x0000;
+robotControlSendFields.reserve1 = 0x0001;
+robotControlSendFields.RecvType1 = 0x0001;
+robotControlSendFields.reserve2 = 0x0001;
+robotControlSendFields.RecvType2 = 0x0001;
+robotControlSendFields.reserve3 = 0x0001;
+robotControlSendFields.RecvType3 = 0x0001;
+robotControlSendFields.reserve4 = 0x0001;
+robotControlSendFields.RecvType4 = 0x0001;
 
-robotControlSendFields.pos1 = 0;
-robotControlSendFields.pos2 = 0;
-robotControlSendFields.po3 = 0;
-robotControlSendFields.pos4 = 0;
-robotControlSendFields.pos5 = 0;
-robotControlSendFields.pos6 = 0;
-robotControlSendFields.pos7 = 0;
-robotControlSendFields.pos8 = 0;
+robotControlSendFields.SendIOType = 0x0000;
 
-robotControlSendFields.respos4 = 0xffffffff;
+// robotControlSendFields.Command = 0x0001;
+// robotControlSendFields.reservestart = 0x0002;
+// robotControlSendFields.reserve1 = 0x0002;
+// robotControlSendFields.RecvType1 = 0x0002;
+// robotControlSendFields.reserve2 = 0x0002;
+// robotControlSendFields.RecvType2 = 0x0002;
+// robotControlSendFields.reserve3 = 0x0002;
+// robotControlSendFields.RecvType3 = 0x0002;
+// robotControlSendFields.reserve4 = 0x0002;
+// robotControlSendFields.RecvType4 = 0x0002;
+
+
+// robotControlSendFields.pos1 = 0;
+// robotControlSendFields.pos2 = 0;
+// robotControlSendFields.po3 = 0;
+// robotControlSendFields.pos4 = 0;
+// robotControlSendFields.pos5 = 0;
+// robotControlSendFields.pos6 = 0;
+// robotControlSendFields.pos7 = 0;
+// robotControlSendFields.pos8 = 0;
+
+// robotControlSendFields.respos4 = 0xffffffff;
 
 console.log("DATA: " + robotControlSendBuffer.toString('hex'));
 
@@ -254,12 +268,86 @@ let sock = dgram.createSocket('udp4');
 sock.send((robotControlSendBuffer), 10000, '192.168.0.20');
 
 
-sock.on('message', function(msg, rinfo) {
-    console.log('DATA: ' + msg.toString('hex'));
+let counter = 0;
 
+sock.on('message', function(msg, rinfo) {
+    // console.log('DATA: ' + msg.toString('hex'));
+
+    msg.copy(robotControlRecvBuffer);
+
+  
+    // Writing 32bit or 4 byte floating point
+    // values to the buffer and printing
+    // returned value to console
+    console.log('POS1 REC: ' + robotControlRecvFields.pos1recv1);
+    console.log('POS2 REC: ' + robotControlRecvFields.pos2);
+    console.log('POS3 REC: ' + robotControlRecvFields.pos3);
+    // console.log('POS4: ' + robotControlRecvFields.pos4);
+    // console.log('POS5: ' + robotControlRecvFields.pos5);
+    // console.log('POS6: ' + robotControlRecvFields.pos6);
+    // console.log('POS7: ' + robotControlRecvFields.pos7);
+    // console.log('POS8: ' + robotControlRecvFields.pos8);
+
+    // console.log('robotControlRecvBuffer: ' + robotControlRecvBuffer.toString('hex'));
+
+
+
+    sendPos();
     
 
 });
+
+let delta = 0.3;
+let ratio = 1.0;
+
+let increment = 0.0;
+
+function sendPos() {
+
+    increment = delta * ratio * 3.141592 / 180.0;
+
+    robotControlRecvBuffer.copy(robotControlSendBuffer);
+
+    robotControlSendFields.Command = 0x0001;
+    robotControlSendFields.reservestart = 0x0001;
+    robotControlSendFields.reserve1 = 0x0001;
+    robotControlSendFields.RecvType1 = 0x0001;
+    robotControlSendFields.reserve2 = 0x0001;
+    robotControlSendFields.RecvType2 = 0x0001;
+    robotControlSendFields.reserve3 = 0x0001;
+    robotControlSendFields.RecvType3 = 0x0001;
+    robotControlSendFields.reserve4 = 0x0001;
+    robotControlSendFields.RecvType4 = 0x0001;
+
+
+    counter ++;
+
+    if(counter == 1) {
+
+        delta = delta + 1000.0;
+        robotControlSendFields.pos1 = robotControlSendFields.pos1;
+        robotControlSendFields.pos2 = robotControlSendFields.pos2;
+        robotControlSendFields.pos3 = robotControlSendFields.pos3 + 0.1;
+        robotControlSendFields.pos4 = robotControlSendFields.pos4;
+        robotControlSendFields.pos5 = robotControlSendFields.pos5;
+        robotControlSendFields.pos6 = robotControlSendFields.pos6;
+        robotControlSendFields.pos7 = robotControlSendFields.pos7;
+        robotControlSendFields.pos8 = robotControlSendFields.pos8;
+        counter = 0;
+
+        console.log('ARTTI');
+    }
+
+    robotControlSendFields.respos4 = 0xffffffff;
+
+    console.log('POS2 TRX: ' + robotControlSendFields.pos2);
+
+    // robotControlSendFields.Command = 0x0000;
+    // robotControlSendFields.reservestart = 0x0000;
+
+    sock.send((robotControlSendBuffer), 10000, '192.168.0.20');
+
+}
 
 
 
