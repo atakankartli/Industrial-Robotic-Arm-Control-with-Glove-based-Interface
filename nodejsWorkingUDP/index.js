@@ -17,8 +17,8 @@ const dgram = require('dgram');
 
 app.use(express.static(__dirname));
 
-app.get('/', function (req, res) {
-    res.sendFile(__dirname + '/gui.html');
+app.get('/gui.html', function (req, res) {
+    res.sendFile(__dirname + '/public' + '/gui.html');
 });
 
 io.on('connection', function (socket) {
@@ -290,7 +290,9 @@ sock.on('message', function(msg, rinfo) {
 
     // console.log('robotControlRecvBuffer: ' + robotControlRecvBuffer.toString('hex'));
 
-
+    io.emit("printCoordinate", {coordinateX: robotControlRecvFields.pos1recv1, 
+        coordinateY: robotControlRecvFields.pos1recv2, 
+        coordinateZ: robotControlRecvFields.pos1recv3, });
 
     sendPos();
     
@@ -351,5 +353,10 @@ function sendPos() {
 
 
 
-//setInterval(main, 1000);
+// setInterval(main, 1000);
 // setInterval(sendingFunc, 500);
+
+function main() {
+    console.log("SENT");
+    io.emit("printCoordinate", {coordinateX: 12.43});
+}
