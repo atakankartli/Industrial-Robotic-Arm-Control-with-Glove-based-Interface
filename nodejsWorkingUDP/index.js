@@ -13,6 +13,18 @@ const io = require('socket.io')(server);
 const dgram = require('dgram');
 
 
+let positionData = {
+    X: 0.0,
+    Y: 0.0,
+    Z: 0.0,
+    A: 0.0,
+    B: 0.0,
+    C: 0.0,
+    L1: 0.0,
+    L2: 0.0
+};
+
+let firstInput = 0;
 
 
 app.use(express.static(__dirname));
@@ -39,43 +51,23 @@ io.on('connection', function (socket) {
         // Code to send the joint values to the robot arm controller
         port.write(data + '\n');
     });
+
+
+
+    socket.on('changePositionOneByOne-event', function (data) {
+        console.log("Received new pos data: " + data);
+        
+        
+    });
+
+    
+
+
 });
 
 server.listen(3000, function () {
     console.log('listening on *:3000');
 });
-
-
-
-// typedef struct {
-// 	float j1; // J1 axis angle (radian)
-// 	float j2; // J2 axis angle (radian)
-// 	float j3; // J3 axis angle (radian)
-// 	float j4; // J4 axis angle (radian)
-// 	float j5; // J5 axis angle (radian)
-// 	float j6; // J6 axis angle (radian)
-// 	float j7; // Additional axis 1 (J7 axis angle) (radian)
-// 	float j8; // Additional axis 2 (J8 axis angle) (radian)
-// } JOINT;
-
-/*************************************************************/
-
-// typedef struct {
-// 	float x; // X axis coordinate value (mm)
-// 	float y; // Y axis coordinate value (mm)
-// 	float z; // Z axis coordinate value (mm)
-// 	float a; // A axis coordinate value (radian)
-// 	float b; // B axis coordinate value (radian)
-// 	float c; // C axis coordinate value (radian)
-// 	float l1; // Additional axis 1 (mm or radian)
-// 	float l2; // Additional axis 2 (mm or radian)
-// } WORLD;
-
-// typedef struct {
-// 	WORLD w;
-// 	unsigned intsflg1; // Structural flag 1
-// 	unsigned intsflg2; // Structural flag 2
-// } POSE;
 
 
 let robotControlSend = Struct()
@@ -290,9 +282,23 @@ sock.on('message', function(msg, rinfo) {
 
     // console.log('robotControlRecvBuffer: ' + robotControlRecvBuffer.toString('hex'));
 
-    io.emit("printCoordinate", {coordinateX: robotControlRecvFields.pos1recv1, 
-        coordinateY: robotControlRecvFields.pos1recv2, 
-        coordinateZ: robotControlRecvFields.pos1recv3, });
+    if(firstInput == 0) {
+
+        positionData.X = robotControlRecvFields.pos1recv1;
+        positionData.Y = robotControlRecvFields.pos1recv2;
+        positionData.Z = robotControlRecvFields.pos1recv3;
+        positionData.A = robotControlRecvFields.pos1recv4;
+        positionData.B = robotControlRecvFields.pos1recv5;
+        positionData.C = robotControlRecvFields.pos1recv6;
+        positionData.L1 = robotControlRecvFields.pos1recv7;
+        positionData.L2 = robotControlRecvFields.pos1recv8;
+        firstInput++;
+
+    }
+
+    io.emit("printCoordinate", {coordinateX: positionData.X, 
+        coordinateY: positionData.Y, 
+        coordinateZ: positionData.Z });
 
     sendPos();
     
@@ -305,8 +311,6 @@ let ratio = 1.0;
 let increment = 0.0;
 
 function sendPos() {
-
-    increment = delta * ratio * 3.141592 / 180.0;
 
     robotControlRecvBuffer.copy(robotControlSendBuffer);
 
@@ -322,23 +326,17 @@ function sendPos() {
     robotControlSendFields.RecvType4 = 0x0001;
 
 
-    counter ++;
+    robotControlSendFields.pos1 = positionData.X;
+    robotControlSendFields.pos2 = positionData.Y;
+    robotControlSendFields.pos3 = positionData.Z;
+    robotControlSendFields.pos4 = positionData.A;
+    robotControlSendFields.pos5 = positionData.B;
+    robotControlSendFields.pos6 = positionData.C;
+    robotControlSendFields.pos7 = positionData.L1;
+    robotControlSendFields.pos8 = positionData.L2;
 
-    if(counter == 1) {
 
-        delta = delta + 1000.0;
-        robotControlSendFields.pos1 = robotControlSendFields.pos1;
-        robotControlSendFields.pos2 = robotControlSendFields.pos2;
-        robotControlSendFields.pos3 = robotControlSendFields.pos3 + 0.1;
-        robotControlSendFields.pos4 = robotControlSendFields.pos4;
-        robotControlSendFields.pos5 = robotControlSendFields.pos5;
-        robotControlSendFields.pos6 = robotControlSendFields.pos6;
-        robotControlSendFields.pos7 = robotControlSendFields.pos7;
-        robotControlSendFields.pos8 = robotControlSendFields.pos8;
-        counter = 0;
 
-        console.log('ARTTI');
-    }
 
     robotControlSendFields.respos4 = 0xffffffff;
 
@@ -353,7 +351,7 @@ function sendPos() {
 
 
 
-setInterval(main, 1000);
+// setInterval(main, 1000);
 // setInterval(sendingFunc, 500);
 
 function main() {
