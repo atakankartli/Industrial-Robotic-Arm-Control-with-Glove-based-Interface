@@ -353,7 +353,7 @@ function sendPos() {
 
 
 
-// setInterval(main, 1000);
+setInterval(main, 1000);
 // setInterval(sendingFunc, 500);
 
 function main() {

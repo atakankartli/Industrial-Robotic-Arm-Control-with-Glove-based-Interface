@@ -72,3 +72,11 @@ button:hover {
     color: #333;
     text-align: center;
 }
+
+
+input[type=range][orient=vertical]
+{
+    -webkit-appearance: slider-vertical; /* Chromium */
+    width: 15px;
+    height: 150px;
+}
