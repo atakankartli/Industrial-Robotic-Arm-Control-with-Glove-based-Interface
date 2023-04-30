@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" type="text/css" href="/public/gui.css">
+        <link rel="stylesheet" type="text/css" href="/public/bootstrap/css/bootstrap.css">
+        <title>Robot Arm Controller</title>
+
+    </head>
+    <body>
+
+        <div class="container-fluid bg-3 text-center">
+            <hr/>
+            <div class="row">
+                <div class="col-sm-2"></div>
+                <div class="col-sm-8">
+                    <h1 class="display-5 fw-bold">RV-2F Robot Arm Controller</h1>
+                </div>
+                <div class="col-sm-2"></div>
+            </div>
+            <hr/>
+
+
+            <div class="row">
+                <div class="col-sm-2"></div>
+                <div class="col-sm-2">
+                    <button class="btn btn-primary btn-sm" onmousedown="mouseDown('x', '+')" onmouseup="mouseUp('x', '+')" style="width: 20%;--bs-btn-padding-y:0rem;--bs-btn-padding-x:0rem;--bs-btn-font-size:1.2rem;" type="button" >+</button>
+                </div>
+                <div class="col-sm-2">
+                    <button class="btn btn-primary btn-sm" onmousedown="mouseDown('y', '+')" onmouseup="mouseUp('y', '+')" style="width: 20%;--bs-btn-padding-y:0rem;--bs-btn-padding-x:0rem;--bs-btn-font-size:1.2rem;" type="button" >+</button>
+                </div>
+                <div class="col-sm-2">
+                    <button class="btn btn-primary btn-sm" onmousedown="mouseDown('z', '+')" onmouseup="mouseUp('z', '+')" style="width: 20%;--bs-btn-padding-y:0rem;--bs-btn-padding-x:0rem;--bs-btn-font-size:1.2rem;" type="button" >+</button>
+                </div>
+                <div class="col-sm-2"></div>
+                <div class="col-sm-2"></div>
+            </div>
+
+
+            <div class="row">
+                <div class="col-sm-2"></div>
+                <div class="col-sm-2 align-self-center">
+                    <div class="input-group flex-nowrap">
+                        <span class="input-group-text" id="addon-wrapping">X</span>
+                        <input type="number" id="inputX" name="inputX" class="form-control" placeholder="Coordinates" aria-describedby="addon-wrapping">
+                    </div>
+                </div>
+                <div class="col-sm-2 align-self-center">
+                    <div class="input-group flex-nowrap">
+                        <span class="input-group-text" id="addon-wrapping">Y</span>
+                        <input type="number" id="inputY" name="inputY" class="form-control" placeholder="Coordinates" aria-describedby="addon-wrapping">
+                    </div>
+                </div>
+                <div class="col-sm-2 align-self-center">
+                    <div class="input-group flex-nowrap">
+                        <span class="input-group-text" id="addon-wrapping">Z</span>
+                        <input type="number" id="inputZ" name="inputZ" class="form-control" placeholder="Coordinates" aria-describedby="addon-wrapping">
+                    </div>
+                </div>
+                <div class="col-sm-2 d-grid gap-2 mx-auto">
+                    <button class="btn btn-primary" type="button" onclick="sendXYZCoordinates()">Send XYZ Coordinates</button>
+                </div>
+                <div class="col-sm-2"></div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-2"></div>
+                <div class="col-sm-2">
+                    <button class="btn btn-primary btn-sm" onmousedown="mouseDown('x', '-')" onmouseup="mouseUp('x', '-')" style="width: 20%;--bs-btn-padding-y:0rem;--bs-btn-padding-x:0rem;--bs-btn-font-size:1.2rem;" type="button" >-</button>
+                </div>
+                <div class="col-sm-2">
+                    <button class="btn btn-primary btn-sm" onmousedown="mouseDown('y', '-')" onmouseup="mouseUp('y', '-')" style="width: 20%;--bs-btn-padding-y:0rem;--bs-btn-padding-x:0rem;--bs-btn-font-size:1.2rem;" type="button" >-</button>
+                </div>
+                <div class="col-sm-2">
+                    <button class="btn btn-primary btn-sm" onmousedown="mouseDown('z', '-')" onmouseup="mouseUp('z', '-')" style="width: 20%;--bs-btn-padding-y:0rem;--bs-btn-padding-x:0rem;--bs-btn-font-size:1.2rem;" type="button" >-</button>
+                </div>
+                <div class="col-sm-2"></div>
+                <div class="col-sm-2"></div>
+            </div>
+
+            <br>
+
+            <div class="row">
+                <div class="col-sm-2"></div>
+                <div class="col-sm-2">
+                    <input type="range" class="form-range" min="0" max="10" step="1" id="rangeX">
+                </div>
+                <div class="col-sm-2">
+                    <input type="range" class="form-range" min="0" max="10" step="1" id="rangeY">
+                </div>
+                <div class="col-sm-2">
+                    <input type="range" class="form-range" min="0" max="10" step="1" id="rangeZ">
+                </div>
+                <div class="col-sm-2"></div>
+                <div class="col-sm-2"></div>
+            </div>
+
+
+
+
+            <hr/><br>
+            <div class="row">
+                <div class="col-sm-4"></div>
+                <div class="col-sm-3">
+                    <h1 class="display-6 font-weight">Current Position</h1>
+                </div>
+                <div class="col-sm-4"></div>
+                <div class="col-sm-1"></div>
+            </div>
+            <div class="row">
+                <div class="col-sm-4"></div>
+                <div class="col-sm-3">
+                    <div class="input-group flex-nowrap">
+                        <span class="input-group-text mt-2" id="addon-wrapping">Current X</span>
+                        <input type="number" id="currentX" name="currentX" class="form-control mt-2" placeholder="Coordinates" aria-describedby="addon-wrapping" disabled>
+                    </div>
+                </div>
+                <div class="col-sm-4"></div>
+                <div class="col-sm-1"></div>
+            </div>
+            <div class="row">
+                <div class="col-sm-4"></div>
+                <div class="col-sm-3">
+                    <div class="input-group flex-nowrap">
+                        <span class="input-group-text mt-2" id="addon-wrapping">Current Y</span>
+                        <input type="number" id="currentY" name="currentY" class="form-control mt-2" placeholder="Coordinates" aria-describedby="addon-wrapping" disabled>
+                    </div>
+                </div>
+                <div class="col-sm-4"></div>
+                <div class="col-sm-1"></div>
+            </div>
+            <div class="row">
+                <div class="col-sm-4"></div>
+                <div class="col-sm-3">
+                    <div class="input-group flex-nowrap">
+                        <span class="input-group-text mt-2" id="addon-wrapping">Current Z</span>
+                        <input type="number" id="currentZ" name="currentZ" class="form-control mt-2" placeholder="Coordinates" aria-describedby="addon-wrapping" disabled>
+                    </div>
+                </div>
+                <div class="col-sm-4"></div>
+                <div class="col-sm-1"></div>
+            </div>
+            <br>
+            <div class="row">
+                <div class="col-sm-4"></div>
+                <div class="col-sm-3">
+                    <h1 class="display-6 font-weight">Received Data</h1>
+                </div>
+                <div class="col-sm-4"></div>
+                <div class="col-sm-1"></div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-4"></div>
+                <div class="col-sm-3">
+                    <div class="form-floating">
+                        <textarea class="form-control" placeholder="Leave a comment here" id="recvData" style="height: 100px" readonly></textarea>
+                    </div>
+                </div>
+                <div class="col-sm-4"></div>
+                <div class="col-sm-1"></div>
+            </div>
+            <div class="row">
+                <div class="col-sm"></div>
+                <div class="col-sm-3"></div>
+                <div class="col-sm-4"></div>
+                <div class="col-sm-4"></div>
+            </div>
+            <div class="row">
+                <div class="col-sm"></div>
+                <div class="col-sm-3"></div>
+                <div class="col-sm-4"></div>
+                <div class="col-sm-4"></div>
+            </div>
+            <div class="row">
+                <div class="col-sm-3"></div>
+                <div class="col-sm-3"></div>
+                <div class="col-sm-3"></div>
+                <div class="col-sm-3"></div>
+            </div>
+            <div class="row">
+                <div class="col-sm-3"> </div>
+                <div class="col-sm-3"></div>
+                <div class="col-sm-3"></div>
+                <div class="col-sm-3"></div>
+            </div>
+            <div class="row">
+                <div class="col-sm-3"> </div>
+                <div class="col-sm-3"></div>
+                <div class="col-sm-3"></div>
+                <div class="col-sm-3"></div>
+            </div>
+            <div class="row">
+                <div class="col-sm-3"> </div>
+                <div class="col-sm-3"></div>
+                <div class="col-sm-3"></div>
+                <div class="col-sm-3"></div>
+            </div>
+            <div class="row">
+                <div class="col-sm-3"> </div>
+                <div class="col-sm-3"></div>
+                <div class="col-sm-3"></div>
+                <div class="col-sm-3"></div>
+            </div>
+            <div class="row">
+                <div class="col-sm-3"> </div>
+                <div class="col-sm-3"></div>
+                <div class="col-sm-3"></div>
+                <div class="col-sm-3"></div>
+            </div>
+
+            <div id="container"></div>
+        </div>
+
+        <script src="https://cdn.socket.io/4.6.0/socket.io.min.js" integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+" crossorigin="anonymous"></script>
+        <script src="/bundle.js"></script>
+        <script src="/public/gui.js"></script>
+        <script src="/node_modules/konva/konva.js"></script>
+        <script type="text/javascript" src="/node_modules/nipplejs/dist/nipplejs.js"></script>
+
+    </body>
+</html>
