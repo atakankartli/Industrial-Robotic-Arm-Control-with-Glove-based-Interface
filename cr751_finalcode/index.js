@@ -13,6 +13,13 @@ const io = require('socket.io')(server);
 const dgram = require('dgram');
 
 
+const i2c = require('i2c-bus');
+const ads1x15 = require('ads1x15');
+
+
+var mpu6050 = require('mpu6050');
+
+
 let robotControlSend = Struct()
   .word16Ule('Command')         // Command
   .word16Ule('reservestart')        // Command data type designation
@@ -145,7 +152,10 @@ let positionData = {
     rangeZ: 0.0,
     mouseX: 0,
     mouseY: 0,
-    mouseZ: 0
+    mouseZ: 0,
+    adcX: 0,
+    adcY: 0,
+    adcZ: 0
 };
 
 let firstInput = 0;
@@ -394,11 +404,11 @@ async function sendPos() {
     robotControlSendFields.RecvType4 = 0x0001;
 
 
-    robotControlSendFields.pos1 = positionData.X + positionData.rangeX + positionData.mouseX;
+    robotControlSendFields.pos1 = positionData.X + positionData.rangeX + positionData.mouseX + positionData.adcX;
 
-    robotControlSendFields.pos2 = positionData.Y + positionData.rangeY + positionData.mouseY;
-    console.log(robotControlSendFields.pos1 + "---" + positionData.X + "---" + positionData.mouseX);
-    robotControlSendFields.pos3 = positionData.Z + positionData.rangeZ + positionData.mouseZ;
+    robotControlSendFields.pos2 = positionData.Y + positionData.rangeY + positionData.mouseY + positionData.adcY;
+    //console.log(robotControlSendFields.pos1 + "---" + positionData.X + "---" + positionData.mouseX);
+    robotControlSendFields.pos3 = positionData.Z + positionData.rangeZ + positionData.mouseZ + positionData.adcZ;
     robotControlSendFields.pos4 = positionData.A;
     robotControlSendFields.pos5 = positionData.B;
     robotControlSendFields.pos6 = positionData.C;
@@ -438,3 +448,83 @@ function main() {
     console.log("SENT");
     io.emit("printCoordinate", {coordinateX: 12.43});
 }
+
+
+// Instantiate and initialize.
+var mpu = new mpu6050();
+mpu.initialize();
+ 
+// Test the connection before using.
+
+
+
+
+
+
+
+
+const adcRead = async () => {
+
+  const adc = new ads1x15();
+  await adc.openBus(1);
+  let middleFingerVoltage;
+  let indexFingerVoltage;
+
+  //0 -> middle finger
+  //1 -> index finger
+
+  for await (let channel of [0,1]) {
+    const measure = await adc.readSingleEnded({channel});
+    calcVoltage = (measure*0.02095) - 24.76;
+
+    switch(channel) {
+        case 0:
+            middleFingerVoltage = calcVoltage;
+        break;
+
+        case 1:
+            indexFingerVoltage = calcVoltage;
+        break;
+
+        default:
+        break;
+    }
+    //console.log("VOLTAGE", channel,": ", calcVoltage);
+  }
+
+//   if(calcVoltage > 2) {
+
+//     positionData.adcZ = -1;
+    
+//   }
+
+//   else {
+//     positionData.adcZ = 0;
+//   }
+
+
+  //2 -> sag sol
+  // -10000<  demek sag yatti demek
+  //  10000>  demek sola yatti demek
+
+  mpu.testConnection(function(err, testPassed) {
+    if (testPassed) {
+      mpu.getAcceleration(function(err, data){
+        data[0] = Math.ceil(data[0]     /10)*10;
+        data[1] = Math.ceil(data[1]/10)*10;
+        data[2] = Math.ceil(data[2]/10)*10;
+        console.log(data[1]);
+      });
+      // Put the MPU6050 back to sleep.
+      // mpu.setSleepEnabled(1);
+    }
+  });
+
+
+}
+
+setInterval(adcRead, 500);
+
+
+
+ 
