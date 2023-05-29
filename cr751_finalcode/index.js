@@ -3,7 +3,8 @@
 const fs = require('fs');
 const Struct = require('struct');
 const { unzipSync } = require('zlib');
-
+const readline = require('readline');
+const Gpio = require('pigpio').Gpio;
 
 const express = require('express');
 const app = express();
@@ -18,6 +19,18 @@ const ads1x15 = require('ads1x15');
 
 
 var mpu6050 = require('mpu6050');
+
+
+let motorSpeed = 60;
+let motorIn1 = 20;
+let motorIn2 = 21;
+let motorIn3 = 19;
+let motorIn4 = 26;
+
+let motorEnA = 18;
+let motorEnB = 13;
+
+
 
 
 let robotControlSend = Struct()
@@ -159,8 +172,54 @@ let positionData = {
 };
 
 let firstInput = 0;
+///////////////////////////
+let dutyCycle = (255) * motorSpeed / 100 ;
+const enablePin1 = new Gpio(motorEnA,{mode: Gpio.OUTPUT});
+const In1 = new Gpio(motorIn1,{mode: Gpio.OUTPUT});
+const In2 = new Gpio(motorIn2,{mode: Gpio.OUTPUT});
+
+In1.digitalWrite(1);
+In2.digitalWrite(0);
+
+// enablePin1.pwmWrite(parseInt(motorSpeed));
 
 
+const button = new Gpio(26, {
+    mode: Gpio.INPUT,
+    pullUpDown: Gpio.PUD_DOWN,
+    edge: Gpio.EITHER_EDGE
+});
+
+button.on('interrupt', (level) =>  {
+    if(!level) {
+        enablePin1.pwmWrite(parseInt(0));
+    }
+    else if (level) {
+        enablePin1.pwmWrite(parseInt(motorSpeed));
+    }
+
+});
+
+
+// const rl = readline.createInterface({
+//         input: process.stdin,
+//         output:process.stdout
+// });
+
+// rl.on('line', function(input){
+//     if(input == 'q'){
+//         enablePin1.pwmWrite(0);
+
+//     }else if(input== '10'){
+        
+//         enablePin1.pwmWrite(parseInt(255/10));
+//     }else if(input== '50'){
+        
+//         enablePin1.pwmWrite(parseInt(255/2));
+//     }
+// })
+
+//////////////////////////
 app.use(express.static(__dirname));
 
 app.get('/gui.html', function (req, res) {
@@ -502,6 +561,10 @@ const adcRead = async () => {
 //     positionData.adcZ = 0;
 //   }
 
+  //1 -> asagi yukari
+  // -10000<  demek asagi bakiyor demek
+  //  10000>  demek yukari bakiyor demek
+
 
   //2 -> sag sol
   // -10000<  demek sag yatti demek
@@ -510,10 +573,31 @@ const adcRead = async () => {
   mpu.testConnection(function(err, testPassed) {
     if (testPassed) {
       mpu.getAcceleration(function(err, data){
-        data[0] = Math.ceil(data[0]     /10)*10;
+        console.log(data);
+        data[0] = Math.ceil(data[0]/10)*10;
         data[1] = Math.ceil(data[1]/10)*10;
         data[2] = Math.ceil(data[2]/10)*10;
-        console.log(data[1]);
+        
+        
+        // if(data[2] < -10000) {
+        //     console.log("SAGA YATTI");
+        // }
+        // else if(data[2] > 10000) {
+        //     console.log("SOLA YATTI");
+        // }
+        // else {
+        //     console.log("DÜZ DURUYOR");
+        // }
+
+        // if(data[1] < -10000) {
+        //     console.log("ASAGI BAKIYOR");
+        // }
+        // else if(data[1] > 10000) {
+        //     console.log("YUKARI BAKIYOR");
+        // }
+        // else {
+        //     console.log("DÜZ DURUYOR");
+        // }
       });
       // Put the MPU6050 back to sleep.
       // mpu.setSleepEnabled(1);
