@@ -21,7 +21,8 @@ const ads1x15 = require('ads1x15');
 var mpu6050 = require('mpu6050');
 
 
-let motorSpeed = 60;
+
+let motorSpeed = 150;
 let motorIn1 = 20;
 let motorIn2 = 21;
 let motorIn3 = 19;
@@ -29,6 +30,14 @@ let motorIn4 = 26;
 
 let motorEnA = 18;
 let motorEnB = 13;
+
+
+const limitXpositive = 400;
+const limitXnegative = -150;
+
+const limitYpositive = 300;
+const limitYnegative = -300;
+
 
 
 
@@ -173,16 +182,18 @@ let positionData = {
 
 let firstInput = 0;
 ///////////////////////////
-let dutyCycle = (255) * motorSpeed / 100 ;
-const enablePin1 = new Gpio(motorEnA,{mode: Gpio.OUTPUT});
-const In1 = new Gpio(motorIn1,{mode: Gpio.OUTPUT});
-const In2 = new Gpio(motorIn2,{mode: Gpio.OUTPUT});
+// let dutyCycle = (255) * motorSpeed / 100 ;
+// const enablePin1 = new Gpio(motorEnA,{mode: Gpio.OUTPUT});
+// const In1 = new Gpio(motorIn1,{mode: Gpio.OUTPUT});
+// const In2 = new Gpio(motorIn2,{mode: Gpio.OUTPUT});
 
-In1.digitalWrite(1);
-In2.digitalWrite(0);
+// In1.digitalWrite(1);
+// In2.digitalWrite(0);
 
 // enablePin1.pwmWrite(parseInt(motorSpeed));
 
+
+const motorServo = new Gpio(motorEnA, {mode: Gpio.OUTPUT});
 
 const button = new Gpio(26, {
     mode: Gpio.INPUT,
@@ -190,12 +201,65 @@ const button = new Gpio(26, {
     edge: Gpio.EITHER_EDGE
 });
 
+
+const motor = new Gpio(10, {mode: Gpio.OUTPUT});
+
+let pulseWidth = 500;
+let zincrement = 100;
+
+
+let currentTime = Date.now();
+
+
+//2500 -> kapatma, 500 -> acma
+function openGripper() {
+    console.log("openGripper");
+    motor.servoWrite(500); 
+    setTimeout(stopGripper, 4500);
+}
+
+function closeGripper() {
+    console.log("openGripper");
+    motor.servoWrite(2500); 
+    setTimeout(stopGripper, 4500);
+}
+
+function stopGripper() {
+    console.log("stopGripper");
+    motor.servoWrite(0);
+    
+}
+
+
+// setInterval(() => {
+//   motor.servoWrite(pulseWidth);
+//     console.log(pulseWidth);
+//   pulseWidth += zincrement;
+//   if (pulseWidth >= 2500) {
+//     zincrement = -100;
+//   } else if (pulseWidth <= 500) {
+//     zincrement = 100;
+//   }
+// },300);
+
+
 button.on('interrupt', (level) =>  {
     if(!level) {
-        enablePin1.pwmWrite(parseInt(0));
+        // enablePin1.pwmWrite(parseInt(0));
+
+        const millis = Date.now() - currentTime;
+        console.log("Time elapsed: ", millis);
+        currentTime = Date.now();
+        motor.servoWrite(0);
+
     }
     else if (level) {
-        enablePin1.pwmWrite(parseInt(motorSpeed));
+        // enablePin1.pwmWrite(parseInt(motorSpeed));
+        
+        const millis = Date.now() - currentTime;
+        console.log("Time elapsed: ", millis);
+        currentTime = Date.now();
+        motor.servoWrite(0);
     }
 
 });
@@ -348,57 +412,9 @@ robotControlSendFields.RecvType4 = 0x0001;
 
 robotControlSendFields.SendIOType = 0x0000;
 
-// robotControlSendFields.Command = 0x0001;
-// robotControlSendFields.reservestart = 0x0002;
-// robotControlSendFields.reserve1 = 0x0002;
-// robotControlSendFields.RecvType1 = 0x0002;
-// robotControlSendFields.reserve2 = 0x0002;
-// robotControlSendFields.RecvType2 = 0x0002;
-// robotControlSendFields.reserve3 = 0x0002;
-// robotControlSendFields.RecvType3 = 0x0002;
-// robotControlSendFields.reserve4 = 0x0002;
-// robotControlSendFields.RecvType4 = 0x0002;
-
-
-// robotControlSendFields.pos1 = 0;
-// robotControlSendFields.pos2 = 0;
-// robotControlSendFields.po3 = 0;
-// robotControlSendFields.pos4 = 0;
-// robotControlSendFields.pos5 = 0;
-// robotControlSendFields.pos6 = 0;
-// robotControlSendFields.pos7 = 0;
-// robotControlSendFields.pos8 = 0;
-
-// robotControlSendFields.respos4 = 0xffffffff;
-
-// console.log("DATA: " + robotControlSendBuffer.toString('hex'));
 
 let calcVoltage;
 
-// const main = async () => {
-
-//   const adc = new ads1x15();
-//   // open i2c bus. 0 for /dev/i2c-0 and 1 for /dev/i2c-1
-//   await adc.openBus(1);
-
-//   // Reading in Single shot mode channels 0-3
-//   console.log('Reading Single shot:');
-//   for await (let channel of [0]) {
-//     const measure = await adc.readSingleEnded({channel});
-//     calcVoltage = (measure*0.02095) - 24.76;
-//     console.log("VOLTAGE: ", calcVoltage);
-
-//     if(calcVoltage > 2)
-//     {
-//       robotControlSendFields.pos1 = robotControlSendFields.pos + 0.01;
-
-
-//     }
-
-//     // fifoNode2C.write(JSON.stringify(data.PTPConfigFromWeb));
-//   }
-
-// }
 
 let sock = dgram.createSocket('udp4');
 sock.send((robotControlSendBuffer), 10000, '192.168.0.20');
@@ -407,35 +423,17 @@ sock.send((robotControlSendBuffer), 10000, '192.168.0.20');
 let counter = 0;
 
 sock.on('message', function(msg, rinfo) {
-    // console.log('DATA: ' + msg.toString('hex'));
-
     msg.copy(robotControlRecvBuffer);
 
-  
-    // Writing 32bit or 4 byte floating point
-    // values to the buffer and printing
-    // returned value to console
-    // console.log('POS4: ' + robotControlRecvFields.pos4);
-    // console.log('POS5: ' + robotControlRecvFields.pos5);
-    // console.log('POS6: ' + robotControlRecvFields.pos6);
-    // console.log('POS7: ' + robotControlRecvFields.pos7);
-    // console.log('POS8: ' + robotControlRecvFields.pos8);
-
-    // console.log('robotControlRecvBuffer: ' + robotControlRecvBuffer.toString('hex'));
-
-    // if(firstInput == 0) {
-
-        positionData.X = robotControlRecvFields.pos1recv1;
-        positionData.Y = robotControlRecvFields.pos2recv1;
-        positionData.Z = robotControlRecvFields.pos3recv1;
-        positionData.A = robotControlRecvFields.pos4recv1;
-        positionData.B = robotControlRecvFields.pos5recv1;
-        positionData.C = robotControlRecvFields.pos6recv1;
-        positionData.L1 = robotControlRecvFields.pos7recv1;
-        positionData.L2 = robotControlRecvFields.pos8recv1;
-        firstInput++;
-
-    // }
+    positionData.X = robotControlRecvFields.pos1recv1;
+    positionData.Y = robotControlRecvFields.pos2recv1;
+    positionData.Z = robotControlRecvFields.pos3recv1;
+    positionData.A = robotControlRecvFields.pos4recv1;
+    positionData.B = robotControlRecvFields.pos5recv1;
+    positionData.C = robotControlRecvFields.pos6recv1;
+    positionData.L1 = robotControlRecvFields.pos7recv1;
+    positionData.L2 = robotControlRecvFields.pos8recv1;
+    firstInput++;
 
     io.emit("printCoordinate", {coordinateX: positionData.X, coordinateY: positionData.Y, coordinateZ: positionData.Z, recvData: robotControlRecvBuffer.toString('hex')});
     sendPos();
@@ -462,12 +460,42 @@ async function sendPos() {
     robotControlSendFields.reserve4 = 0x0001;
     robotControlSendFields.RecvType4 = 0x0001;
 
+    robotControlSendFields.pos3 = positionData.Z + positionData.rangeZ + positionData.mouseZ + positionData.adcZ;
+
+    if((robotControlSendFields.pos3 > 570) || (robotControlSendFields.pos3 > 250)) {
+        robotControlSendFields.pos3 = positionData.Z;
+    }
+
+    let limit = ((robotControlSendFields - 250) / 3.2);
 
     robotControlSendFields.pos1 = positionData.X + positionData.rangeX + positionData.mouseX + positionData.adcX;
 
+    if(robotControlSendFields.pos1 < 0) {
+        if((limitXnegative + limit) < robotControlSendFields) {
+            robotControlSendFields.pos1 = positionData.X;
+        }     
+    }
+    else if (robotControlSendFields.pos1 > 0) {
+        if((limitXpositive - limit) > robotControlSendFields) {
+            robotControlSendFields.pos1 = positionData.X;
+        }     
+    }
+       
+    
     robotControlSendFields.pos2 = positionData.Y + positionData.rangeY + positionData.mouseY + positionData.adcY;
-    //console.log(robotControlSendFields.pos1 + "---" + positionData.X + "---" + positionData.mouseX);
-    robotControlSendFields.pos3 = positionData.Z + positionData.rangeZ + positionData.mouseZ + positionData.adcZ;
+
+    if(robotControlSendFields.pos2 < 0) {
+        if((limitYnegative + limit) < robotControlSendFields) {
+            robotControlSendFields.pos2 = positionData.Y;
+        }     
+    }
+    else if (robotControlSendFields.pos2 > 0) {
+        if((limitYpositive - limit) > robotControlSendFields) {
+            robotControlSendFields.pos2 = positionData.Y;
+        }     
+    }
+
+    
     robotControlSendFields.pos4 = positionData.A;
     robotControlSendFields.pos5 = positionData.B;
     robotControlSendFields.pos6 = positionData.C;
@@ -475,25 +503,10 @@ async function sendPos() {
     robotControlSendFields.pos8 = positionData.L2;
 
 
-
-
     robotControlSendFields.respos4 = 0xffffffff;
 
-    // console.log('POS1 TRX: ' + robotControlSendFields.pos1);
-    // console.log('POS2 TRX: ' + robotControlSendFields.pos2);
-    // console.log('POS3 TRX: ' + robotControlSendFields.pos3);
-    // console.log('POS4 TRX: ' + robotControlSendFields.pos4);
-    // console.log('POS5 TRX: ' + robotControlSendFields.pos5);
-    // console.log('POS6 TRX: ' + robotControlSendFields.pos6);
-    // console.log('POS7 TRX: ' + robotControlSendFields.pos7);
-    // console.log('POS8 TRX: ' + robotControlSendFields.pos8);
 
-    // robotControlSendFields.Command = 0x0000;
-    // robotControlSendFields.reservestart = 0x0000;
-
-   
     sock.send((robotControlSendBuffer), 10000, '192.168.0.20');
-    // await new Promise(r => setTimeout(r, 100));
 
 
 }
@@ -517,11 +530,6 @@ mpu.initialize();
 
 
 
-
-
-
-
-
 const adcRead = async () => {
 
   const adc = new ads1x15();
@@ -533,33 +541,54 @@ const adcRead = async () => {
   //1 -> index finger
 
   for await (let channel of [0,1]) {
+
     const measure = await adc.readSingleEnded({channel});
     calcVoltage = (measure*0.02095) - 24.76;
 
-    switch(channel) {
-        case 0:
-            middleFingerVoltage = calcVoltage;
-        break;
+        switch(channel) {
+            case 0:
+                middleFingerVoltage = calcVoltage;
+            break;
 
-        case 1:
-            indexFingerVoltage = calcVoltage;
-        break;
+            case 1:
+                indexFingerVoltage = calcVoltage;
+            break;
 
-        default:
-        break;
+            default:
+            break;
+        }
+        // console.log("VOLTAGE", channel,": ", calcVoltage);
     }
-    //console.log("VOLTAGE", channel,": ", calcVoltage);
-  }
 
-//   if(calcVoltage > 2) {
+    console.log("indexFingerVoltage: ", indexFingerVoltage);
+    console.log("middleFingerVoltage: ", middleFingerVoltage);
 
-//     positionData.adcZ = -1;
-    
-//   }
+    if(indexFingerVoltage > 2) {
 
-//   else {
-//     positionData.adcZ = 0;
-//   }
+        // positionData.adcZ = +1;
+        
+    }
+
+    else if (middleFingerVoltage > 2) {
+        // positionData.adcZ = -1;
+
+    }
+
+    else {
+        positionData.adcZ = 0;
+    }
+
+
+
+    //   if(calcVoltage > 2) {
+
+    //     positionData.adcZ = -1;
+        
+    //   }
+
+    //   else {
+    //     positionData.adcZ = 0;
+    //   }
 
   //1 -> asagi yukari
   // -10000<  demek asagi bakiyor demek
@@ -573,7 +602,7 @@ const adcRead = async () => {
   mpu.testConnection(function(err, testPassed) {
     if (testPassed) {
       mpu.getAcceleration(function(err, data){
-        console.log(data);
+        // console.log(data);
         data[0] = Math.ceil(data[0]/10)*10;
         data[1] = Math.ceil(data[1]/10)*10;
         data[2] = Math.ceil(data[2]/10)*10;
@@ -581,22 +610,28 @@ const adcRead = async () => {
         
         // if(data[2] < -10000) {
         //     console.log("SAGA YATTI");
+        //     positionData.adcY = -1;
         // }
         // else if(data[2] > 10000) {
         //     console.log("SOLA YATTI");
+        //     positionData.adcY = 1;
         // }
         // else {
         //     console.log("DÜZ DURUYOR");
+        //     positionData.adcY = 0;
         // }
 
         // if(data[1] < -10000) {
         //     console.log("ASAGI BAKIYOR");
+        //     positionData.adcX = 1;
         // }
         // else if(data[1] > 10000) {
         //     console.log("YUKARI BAKIYOR");
+        //     positionData.adcX = -1;
         // }
         // else {
         //     console.log("DÜZ DURUYOR");
+        //     positionData.adcX = 0;
         // }
       });
       // Put the MPU6050 back to sleep.
