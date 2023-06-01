@@ -38,6 +38,9 @@ const limitXnegative = -150;
 const limitYpositive = 300;
 const limitYnegative = -300;
 
+let gripperStatus = 1; //0 -> acik, 1 -> kapali
+let gripperInProgress = 0; //0 -> not busy, 1 -> busy
+
 
 
 
@@ -201,6 +204,12 @@ const button = new Gpio(26, {
     edge: Gpio.EITHER_EDGE
 });
 
+const buttonGripper = new Gpio(17, {
+    mode: Gpio.INPUT,
+    pullUpDown: Gpio.PUD_DOWN,
+    edge: Gpio.EITHER_EDGE
+});
+
 
 const motor = new Gpio(10, {mode: Gpio.OUTPUT});
 
@@ -211,22 +220,52 @@ let zincrement = 100;
 let currentTime = Date.now();
 
 
+
+buttonGripper.glitchFilter(50000);
+
+buttonGripper.on('interrupt', (level) =>  {
+
+    if (level) {
+
+        if(gripperStatus == 1) {
+            openGripper();
+        }
+        else if(gripperStatus == 0) {
+            closeGripper();
+        }
+    }
+});
+
+
+
 //2500 -> kapatma, 500 -> acma
 function openGripper() {
-    console.log("openGripper");
-    motor.servoWrite(500); 
-    setTimeout(stopGripper, 4500);
+
+    if(gripperInProgress == 0) {
+        console.log("openGripper");
+        motor.servoWrite(500); 
+        setTimeout(stopGripper, 4500);
+        gripperInProgress = 1;
+        gripperStatus = 0;
+    }
+    
 }
 
 function closeGripper() {
-    console.log("openGripper");
-    motor.servoWrite(2500); 
-    setTimeout(stopGripper, 4500);
+
+    if(gripperInProgress == 0) {
+        console.log("closeGripper");
+        motor.servoWrite(2500); 
+        setTimeout(stopGripper, 4500);
+        gripperInProgress = 1;
+        gripperStatus = 1;
+    }
 }
 
 function stopGripper() {
     console.log("stopGripper");
     motor.servoWrite(0);
+    gripperInProgress = 0;
     
 }
 
@@ -243,26 +282,29 @@ function stopGripper() {
 // },300);
 
 
-button.on('interrupt', (level) =>  {
-    if(!level) {
-        // enablePin1.pwmWrite(parseInt(0));
+// button.on('interrupt', (level) =>  {
+//     if(!level) {
+//         // enablePin1.pwmWrite(parseInt(0));
 
-        const millis = Date.now() - currentTime;
-        console.log("Time elapsed: ", millis);
-        currentTime = Date.now();
-        motor.servoWrite(0);
+//         const millis = Date.now() - currentTime;
+//         console.log("Time elapsed: ", millis);
+//         currentTime = Date.now();
+//         motor.servoWrite(0);
 
-    }
-    else if (level) {
-        // enablePin1.pwmWrite(parseInt(motorSpeed));
+//     }
+//     else if (level) {
+//         // enablePin1.pwmWrite(parseInt(motorSpeed));
         
-        const millis = Date.now() - currentTime;
-        console.log("Time elapsed: ", millis);
-        currentTime = Date.now();
-        motor.servoWrite(0);
-    }
+//         const millis = Date.now() - currentTime;
+//         console.log("Time elapsed: ", millis);
+//         currentTime = Date.now();
+//         motor.servoWrite(0);
+//     }
 
-});
+// });
+
+
+
 
 
 // const rl = readline.createInterface({
@@ -462,21 +504,23 @@ async function sendPos() {
 
     robotControlSendFields.pos3 = positionData.Z + positionData.rangeZ + positionData.mouseZ + positionData.adcZ;
 
-    if((robotControlSendFields.pos3 > 570) || (robotControlSendFields.pos3 > 250)) {
+    if((robotControlSendFields.pos3 > 570) || (robotControlSendFields.pos3 < 250)) {
         robotControlSendFields.pos3 = positionData.Z;
     }
 
-    let limit = ((robotControlSendFields - 250) / 3.2);
+    let limit = ((robotControlSendFields.pos3 - 250) / 3.2);
+
+    // console.log("limit: ", limit);
 
     robotControlSendFields.pos1 = positionData.X + positionData.rangeX + positionData.mouseX + positionData.adcX;
 
     if(robotControlSendFields.pos1 < 0) {
-        if((limitXnegative + limit) < robotControlSendFields) {
+        if((limitXnegative + limit) > robotControlSendFields.pos1) {
             robotControlSendFields.pos1 = positionData.X;
         }     
     }
     else if (robotControlSendFields.pos1 > 0) {
-        if((limitXpositive - limit) > robotControlSendFields) {
+        if((limitXpositive - limit) < robotControlSendFields.pos1) {
             robotControlSendFields.pos1 = positionData.X;
         }     
     }
@@ -485,15 +529,69 @@ async function sendPos() {
     robotControlSendFields.pos2 = positionData.Y + positionData.rangeY + positionData.mouseY + positionData.adcY;
 
     if(robotControlSendFields.pos2 < 0) {
-        if((limitYnegative + limit) < robotControlSendFields) {
+        if((limitYnegative + limit) > robotControlSendFields.pos2) {
             robotControlSendFields.pos2 = positionData.Y;
         }     
     }
     else if (robotControlSendFields.pos2 > 0) {
-        if((limitYpositive - limit) > robotControlSendFields) {
+        if((limitYpositive - limit) < robotControlSendFields.pos2) {
             robotControlSendFields.pos2 = positionData.Y;
         }     
     }
+
+    if(((robotControlSendFields.pos1 > -150) && (robotControlSendFields.pos1 < 150))) {
+
+        if(((robotControlSendFields.pos2 > -150) && (robotControlSendFields.pos2 < 150))) {
+
+            robotControlSendFields.pos2 = positionData.Y;
+        }
+
+    }
+
+    if(((robotControlSendFields.pos2 > -150) && (robotControlSendFields.pos2 < 150))) {
+
+        if(((robotControlSendFields.pos1 > -150) && (robotControlSendFields.pos1 < 150))) {
+
+            robotControlSendFields.pos1 = positionData.X;
+        }
+
+    }
+
+
+
+    if((robotControlSendFields.pos1 > 325) && (robotControlSendFields.pos2 > 225)){
+
+        if(robotControlSendFields.pos3 > 475) {
+
+            robotControlSendFields.pos3 = positionData.Z;
+        }
+    }
+
+    if((robotControlSendFields.pos1 > 325) && (robotControlSendFields.pos2 < -225)){
+        
+        if(robotControlSendFields.pos3 > 475) {
+
+            robotControlSendFields.pos3 = positionData.Z;
+        }
+    }
+
+    if((robotControlSendFields.pos1 < -75) && (robotControlSendFields.pos2 > 225)){
+        
+        if(robotControlSendFields.pos3 > 475) {
+
+            robotControlSendFields.pos3 = positionData.Z;
+        }
+    }
+
+    if((robotControlSendFields.pos1 < -75) && (robotControlSendFields.pos2 < -225)){
+        
+        if(robotControlSendFields.pos3 > 475) {
+
+            robotControlSendFields.pos3 = positionData.Z;
+        }
+    }
+
+
 
     
     robotControlSendFields.pos4 = positionData.A;
@@ -560,17 +658,17 @@ const adcRead = async () => {
         // console.log("VOLTAGE", channel,": ", calcVoltage);
     }
 
-    console.log("indexFingerVoltage: ", indexFingerVoltage);
-    console.log("middleFingerVoltage: ", middleFingerVoltage);
+    // console.log("indexFingerVoltage: ", indexFingerVoltage);
+    // console.log("middleFingerVoltage: ", middleFingerVoltage);
 
     if(indexFingerVoltage > 2) {
 
-        // positionData.adcZ = +1;
+        positionData.adcZ = +1;
         
     }
 
     else if (middleFingerVoltage > 2) {
-        // positionData.adcZ = -1;
+        positionData.adcZ = -1;
 
     }
 
@@ -608,31 +706,31 @@ const adcRead = async () => {
         data[2] = Math.ceil(data[2]/10)*10;
         
         
-        // if(data[2] < -10000) {
-        //     console.log("SAGA YATTI");
-        //     positionData.adcY = -1;
-        // }
-        // else if(data[2] > 10000) {
-        //     console.log("SOLA YATTI");
-        //     positionData.adcY = 1;
-        // }
-        // else {
-        //     console.log("DÜZ DURUYOR");
-        //     positionData.adcY = 0;
-        // }
+        if(data[2] < -10000) {
+            // console.log("SAGA YATTI");
+            positionData.adcY = -1;
+        }
+        else if(data[2] > 10000) {
+            // console.log("SOLA YATTI");
+            positionData.adcY = 1;
+        }
+        else {
+            // console.log("DÜZ DURUYOR");
+            positionData.adcY = 0;
+        }
 
-        // if(data[1] < -10000) {
-        //     console.log("ASAGI BAKIYOR");
-        //     positionData.adcX = 1;
-        // }
-        // else if(data[1] > 10000) {
-        //     console.log("YUKARI BAKIYOR");
-        //     positionData.adcX = -1;
-        // }
-        // else {
-        //     console.log("DÜZ DURUYOR");
-        //     positionData.adcX = 0;
-        // }
+        if(data[1] < -10000) {
+            // console.log("ASAGI BAKIYOR");
+            positionData.adcX = 1;
+        }
+        else if(data[1] > 10000) {
+            // console.log("YUKARI BAKIYOR");
+            positionData.adcX = -1;
+        }
+        else {
+            // console.log("DÜZ DURUYOR");
+            positionData.adcX = 0;
+        }
       });
       // Put the MPU6050 back to sleep.
       // mpu.setSleepEnabled(1);
@@ -642,7 +740,7 @@ const adcRead = async () => {
 
 }
 
-setInterval(adcRead, 500);
+setInterval(adcRead, 300);
 
 
 
