@@ -30,3 +30,27 @@ To run this project, you need to have the following dependencies installed:
 
 1. Clone this repository to your local machine using the following command:
 
+2. Install the project dependencies by navigating to the project's root directory and running the following command:
+
+3. Connect the glove to the platform (e.g., Raspberry Pi Compute Module 4) and ensure that the necessary drivers are installed.
+
+4. Make sure the Mitsubishi Rv-2f industrial robot arm and cr751d controller are properly connected and powered.
+
+## Configuration
+
+Before running the code, you need to configure the project by following these steps:
+
+1. Modify the configuration file `config.js` with the appropriate settings for your setup. Update the communication settings, such as IP addresses and port numbers, to establish a connection between the software and the Mitsubishi Rv-2f industrial robot arm.
+
+2. Calibrate the glove sensors by running the calibration script provided (`calibration.js`).
+
+## Usage
+
+To start the Industrial Robotic Arm Control system, execute the following command:
+
+Make sure all the hardware components are connected and powered on before running the code. The GUI interface will launch, providing controls to manipulate the robot arm on the XYZ plane. The glove-based interface will also be active, allowing you to control the robot arm using hand movements.
+
+## Gripper Design
+
+For this project, a modified 3D gripper design was implemented to work
+
