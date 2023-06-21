@@ -17,7 +17,7 @@ The Industrial Robotic Arm Control project combines hardware and software compon
 
 ## Hardware
 
-![General Schematic](https://github.com/atakankartli/CR751-driver/assets/33790735/9c3cb280-b098-4834-be49-9eadd4c2294c)
+![General Schematic](https://github.com/atakankartli/Industrial-Robotic-Arm-Control-with-Glove-based-Interface/assets/33790735/9afd3be7-1c65-439a-8dfa-00adf05dd0b2)
 
 To run this project, you need to have the following hardware:
 
@@ -33,7 +33,8 @@ To run this project, you need to have the following hardware:
 
 ## Controllıng the arm Movement
 
-![Mapping](https://github.com/atakankartli/CR751-driver/assets/33790735/fc07863f-c5b6-4056-9a2e-43aff0f65d22)
+
+![Mapping](https://github.com/atakankartli/Industrial-Robotic-Arm-Control-with-Glove-based-Interface/assets/33790735/29dcbc07-dee5-4a27-a661-d8d11a573ac3)
 
 ## Dependencies for Node.js
 
@@ -64,7 +65,7 @@ Please note that specific versions of these libraries may be required depending 
 
 ## Gripper Design
 
-![gripper](https://github.com/atakankartli/CR751-driver/assets/33790735/05971984-f1bd-4ef7-8344-faff9a48b2c4)
+![gripper](https://github.com/atakankartli/Industrial-Robotic-Arm-Control-with-Glove-based-Interface/assets/33790735/21d6086f-57fe-4ff5-8c28-6d35aecf755a)
 
 For this project, a modified 3D gripper design was implemented for a small DC motor. The gripper design enables the robotic arm to manipulate objects effectively. You can find the initial gripper design at the following link:
 
