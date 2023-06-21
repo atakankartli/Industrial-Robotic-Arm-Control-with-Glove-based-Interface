@@ -1,6 +1,6 @@
 # Industrial Robotic Arm Control with Glove-based Interface
 
-Welcome to the GitHub repository for the Industrial Robotic Arm Control project! This capstone project focuses on real-time control of an industrial robotic arm using a glove-based interface that captures hand movements. Additionally, it involves the development of a soft robotic gripper for object manipulation. The project aims to enable intuitive control and manipulation of the robot arm by mapping the user's hand gestures to corresponding robotic actions, while also incorporating a soft gripper for object manipulation. By utilizing a glove that records hand movements and leveraging animatronic principles.
+Welcome to the GitHub repository for the Industrial Robotic Arm Control project! This capstone project focuses on real-time control of an industrial robotic arm using a glove-based interface that captures hand movements. Additionally, it involves the development of a soft tipped gripper for object manipulation. The project aims to enable intuitive control and manipulation of the robot arm by mapping the user's hand gestures to corresponding robotic actions, while also incorporating a soft gripper for object manipulation. By utilizing a glove that records hand movements and leveraging animatronic principles.
 
 ## Project Overview
 
@@ -15,42 +15,61 @@ The Industrial Robotic Arm Control project combines hardware and software compon
 - Utilization of animatronic principles for improved control and dexterity
 - Modified 3D gripper design for a small DC motor
 
-## Dependencies
+## Hardware
 
-To run this project, you need to have the following dependencies installed:
+![General Schematic](https://github.com/atakankartli/CR751-driver/assets/33790735/9c3cb280-b098-4834-be49-9eadd4c2294c)
 
-- Node.js (version X.X.X)
-- Any platform with I2C support (e.g., Raspberry Pi Compute Module 4)
-- [Mitsubishi Rv-2f industrial robot arm](https://www.mitsubishielectric.com/fa/products/rbt/robot/index.html) and cr751d controller
-- ADS1015 ADC library
-- MPU6050 IMU library
-- Graphical User Interface (GUI) library (e.g., Electron, React, or similar)
+To run this project, you need to have the following hardware:
 
-## Installation
+- Any platform with I2C support (We used Raspberry Pi Compute Module 4)
+- [Mitsubishi Rv-2f industrial robot arm](https://www.mitsubishielectric.com/fa/products/rbt/robot/index.html) and CR751d controller
+- Glove
+  - ADS1015 ADC
+  - MPU6050 IMU
+  - 2xFlex resistor
+  - Voltage divider for the flex resistors
+  - Button
+- Gripper, DC, Servo or Step motor for the gripper  
 
-1. Clone this repository to your local machine using the following command:
+## Controllıng the arm Movement
 
-2. Install the project dependencies by navigating to the project's root directory and running the following command:
+![Mapping](https://github.com/atakankartli/CR751-driver/assets/33790735/fc07863f-c5b6-4056-9a2e-43aff0f65d22)
 
-3. Connect the glove to the platform (e.g., Raspberry Pi Compute Module 4) and ensure that the necessary drivers are installed.
+## Dependencies for Node.js
 
-4. Make sure the Mitsubishi Rv-2f industrial robot arm and cr751d controller are properly connected and powered.
+To run the Industrial Robotic Arm Control project in Node.js, you need to have the following additional dependencies installed:
 
-## Configuration
+- **pigpio**: A library for controlling GPIO (General Purpose Input/Output) pins on the Raspberry Pi. It provides access to the GPIO pins for controlling hardware components.
 
-Before running the code, you need to configure the project by following these steps:
+- **express**: A fast and minimalist web application framework for Node.js. It can be used to create a GUI interface for controlling the robotic arm.
 
-1. Modify the configuration file `config.js` with the appropriate settings for your setup. Update the communication settings, such as IP addresses and port numbers, to establish a connection between the software and the Mitsubishi Rv-2f industrial robot arm.
+- **socket.io**: A library that enables real-time, bidirectional communication between web clients and servers. It can be used to establish a connection between the GUI interface and the server.
 
-2. Calibrate the glove sensors by running the calibration script provided (`calibration.js`).
+- **dgram**: A module that provides UDP (User Datagram Protocol) communication capabilities in Node.js. It can be used for transmitting data between devices in a network.
 
-## Usage
+- **i2c-bus**: A library for accessing I2C (Inter-Integrated Circuit) devices in Node.js. It allows communication with devices connected via the I2C protocol.
 
-To start the Industrial Robotic Arm Control system, execute the following command:
+- **ads1x15**: A library for interacting with ADS1015/ADS1115 analog-to-digital converters. It enables reading analog sensor values connected to the ADC.
 
-Make sure all the hardware components are connected and powered on before running the code. The GUI interface will launch, providing controls to manipulate the robot arm on the XYZ plane. The glove-based interface will also be active, allowing you to control the robot arm using hand movements.
+To install these dependencies, you can use the npm package manager by running the following command:
+
+```bash
+npm install pigpio express socket.io dgram i2c-bus ads1x15
+```
+
+Make sure to include these dependencies in your package.json file or install them individually as required.
+
+Please note that specific versions of these libraries may be required depending on compatibility and project needs.
+
 
 ## Gripper Design
 
-For this project, a modified 3D gripper design was implemented to work
+![gripper](https://github.com/atakankartli/CR751-driver/assets/33790735/05971984-f1bd-4ef7-8344-faff9a48b2c4)
+
+For this project, a modified 3D gripper design was implemented for a small DC motor. The gripper design enables the robotic arm to manipulate objects effectively. You can find the initial gripper design at the following link:
+
+[Modified 3D Gripper Design](https://www.example.com)
+
+Please note that the gripper design can be modified and customized according to your specific requirements. Feel free to make any adjustments or enhancements to optimize it for your application.
+
 
