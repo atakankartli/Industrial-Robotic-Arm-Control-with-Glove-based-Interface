@@ -1,25 +1,17 @@
-// const i2c = require('i2c-bus');
-// const ads1x15 = require('ads1x15');
+
 const fs = require('fs');
 const Struct = require('struct');
 const { unzipSync } = require('zlib');
 const readline = require('readline');
 const Gpio = require('pigpio').Gpio;
-
 const express = require('express');
 const app = express();
 const server = require('http').Server(app);
 const io = require('socket.io')(server);
-
 const dgram = require('dgram');
-
-
 const i2c = require('i2c-bus');
 const ads1x15 = require('ads1x15');
-
-
-var mpu6050 = require('mpu6050');
-
+const mpu6050 = require('mpu6050');
 
 
 let motorSpeed = 150;
@@ -40,9 +32,6 @@ const limitYnegative = -300;
 
 let gripperStatus = 1; //0 -> acik, 1 -> kapali
 let gripperInProgress = 0; //0 -> not busy, 1 -> busy
-
-
-
 
 
 let robotControlSend = Struct()
@@ -216,10 +205,7 @@ const motor = new Gpio(10, {mode: Gpio.OUTPUT});
 let pulseWidth = 500;
 let zincrement = 100;
 
-
 let currentTime = Date.now();
-
-
 
 buttonGripper.glitchFilter(50000);
 
@@ -235,7 +221,6 @@ buttonGripper.on('interrupt', (level) =>  {
         }
     }
 });
-
 
 
 //2500 -> kapatma, 500 -> acma
@@ -270,60 +255,7 @@ function stopGripper() {
 }
 
 
-// setInterval(() => {
-//   motor.servoWrite(pulseWidth);
-//     console.log(pulseWidth);
-//   pulseWidth += zincrement;
-//   if (pulseWidth >= 2500) {
-//     zincrement = -100;
-//   } else if (pulseWidth <= 500) {
-//     zincrement = 100;
-//   }
-// },300);
 
-
-// button.on('interrupt', (level) =>  {
-//     if(!level) {
-//         // enablePin1.pwmWrite(parseInt(0));
-
-//         const millis = Date.now() - currentTime;
-//         console.log("Time elapsed: ", millis);
-//         currentTime = Date.now();
-//         motor.servoWrite(0);
-
-//     }
-//     else if (level) {
-//         // enablePin1.pwmWrite(parseInt(motorSpeed));
-        
-//         const millis = Date.now() - currentTime;
-//         console.log("Time elapsed: ", millis);
-//         currentTime = Date.now();
-//         motor.servoWrite(0);
-//     }
-
-// });
-
-
-
-
-
-// const rl = readline.createInterface({
-//         input: process.stdin,
-//         output:process.stdout
-// });
-
-// rl.on('line', function(input){
-//     if(input == 'q'){
-//         enablePin1.pwmWrite(0);
-
-//     }else if(input== '10'){
-        
-//         enablePin1.pwmWrite(parseInt(255/10));
-//     }else if(input== '50'){
-        
-//         enablePin1.pwmWrite(parseInt(255/2));
-//     }
-// })
 
 //////////////////////////
 app.use(express.static(__dirname));
@@ -439,8 +371,6 @@ io.on('connection', function (socket) {
 });
 
 
-//let fifoNode2C = fs.createWriteStream('/home/project/Desktop/CR751-driver-main/LinuxFiles/node2c.fifo');
-
 robotControlSendFields.Command = 0x0000;
 robotControlSendFields.reservestart = 0x0000;
 robotControlSendFields.reserve1 = 0x0001;
@@ -454,9 +384,7 @@ robotControlSendFields.RecvType4 = 0x0001;
 
 robotControlSendFields.SendIOType = 0x0000;
 
-
 let calcVoltage;
-
 
 let sock = dgram.createSocket('udp4');
 sock.send((robotControlSendBuffer), 10000, '192.168.0.20');
@@ -655,11 +583,8 @@ const adcRead = async () => {
             default:
             break;
         }
-        // console.log("VOLTAGE", channel,": ", calcVoltage);
     }
 
-    // console.log("indexFingerVoltage: ", indexFingerVoltage);
-    // console.log("middleFingerVoltage: ", middleFingerVoltage);
 
     if(indexFingerVoltage > 2) {
 
@@ -676,17 +601,6 @@ const adcRead = async () => {
         positionData.adcZ = 0;
     }
 
-
-
-    //   if(calcVoltage > 2) {
-
-    //     positionData.adcZ = -1;
-        
-    //   }
-
-    //   else {
-    //     positionData.adcZ = 0;
-    //   }
 
   //1 -> asagi yukari
   // -10000<  demek asagi bakiyor demek
@@ -741,7 +655,3 @@ const adcRead = async () => {
 }
 
 setInterval(adcRead, 300);
-
-
-
- 
