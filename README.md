@@ -31,7 +31,7 @@ To run this project, you need to have the following hardware:
   - Button
 - Gripper, DC, Servo or Step motor for the gripper  
 
-## Controllıng the arm Movement
+## Controlling the arm Movement
 
 
 ![Mapping](https://github.com/atakankartli/Industrial-Robotic-Arm-Control-with-Glove-based-Interface/assets/33790735/29dcbc07-dee5-4a27-a661-d8d11a573ac3)
